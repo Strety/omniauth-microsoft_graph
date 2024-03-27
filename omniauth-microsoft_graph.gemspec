@@ -5,7 +5,7 @@ require 'omniauth/microsoft_graph/version'
 
 Gem::Specification.new do |spec|
   spec.name          = "omniauth-microsoft_graph"
-  spec.version       = Omniauth::MicrosoftGraph::VERSION
+  spec.version       = OmniAuth::MicrosoftGraph::VERSION
   spec.authors       = ["Peter Philips", "Joel Van Horn"]
   spec.email         = ["pete@p373.net", "joel@joelvanhorn.com"]
   spec.summary       = %q{omniauth provider for Microsoft Graph}
@@ -18,9 +18,10 @@ Gem::Specification.new do |spec|
   spec.test_files    = spec.files.grep(%r{^(test|spec|features)/})
   spec.require_paths = ["lib"]
 
-  spec.add_runtime_dependency 'omniauth', '~> 1.1', '>= 1.1.1'
-  spec.add_runtime_dependency 'omniauth-oauth2', '~> 1.6'
-  spec.add_development_dependency "sinatra", '~> 0'
+  spec.add_runtime_dependency 'jwt', '~> 2.0'
+  spec.add_runtime_dependency 'omniauth', '~> 2.0'
+  spec.add_runtime_dependency 'omniauth-oauth2', '~> 1.8.0'
+  spec.add_development_dependency "sinatra", '~> 2.2'
   spec.add_development_dependency "rake", '~> 12.3.3', '>= 12.3.3'
   spec.add_development_dependency 'rspec', '~> 3.6'
   spec.add_development_dependency "mocha", '~> 0'

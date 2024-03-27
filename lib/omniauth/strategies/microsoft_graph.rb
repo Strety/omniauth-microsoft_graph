@@ -22,6 +22,7 @@ module OmniAuth
 
       option :scope, DEFAULT_SCOPE
       option :authorized_client_ids, []
+      option :skip_domain_verification, false
 
       uid { raw_info["id"] }
 
@@ -42,6 +43,12 @@ module OmniAuth
           'params' => access_token.params,
           'aud' => options.client_id
         }
+      end
+
+      def auth_hash
+        super.tap do |ah|
+          verify_email(ah, access_token)
+        end
       end
 
       def authorize_params
@@ -94,7 +101,7 @@ module OmniAuth
             verifier = body && body['code']
             client_get_token(verifier, '/auth/microsoft_graph/callback') if verifier
           rescue JSON::ParserError => e
-            warn "[omniauth google-oauth2] JSON parse error=#{e}"
+            warn "[omniauth microsoft_graph] JSON parse error=#{e}"
           end
         end
       end
@@ -124,6 +131,10 @@ module OmniAuth
         raw_response = client.request(:get, 'https://graph.microsoft.com/v1.0/me',
                                       params: { access_token: access_token }).parsed
         (raw_response['aud'] == options.client_id) || options.authorized_client_ids.include?(raw_response['aud'])
+      end
+
+      def verify_email(auth_hash, access_token)
+        OmniAuth::MicrosoftGraph::DomainVerifier.verify!(auth_hash, access_token, options)
       end
     end
   end

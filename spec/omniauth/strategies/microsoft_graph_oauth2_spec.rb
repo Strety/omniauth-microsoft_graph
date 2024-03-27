@@ -243,12 +243,18 @@ describe OmniAuth::Strategies::MicrosoftGraph do
 
   describe '#callback_path' do
     it 'has the correct default callback path' do
+      allow(subject).to receive(:script_name).and_return('')
       expect(subject.callback_path).to eq('/auth/microsoft_graph/callback')
     end
 
     it 'should set the callback_path parameter if present' do
       @options = { callback_path: '/auth/foo/callback' }
       expect(subject.callback_path).to eq('/auth/foo/callback')
+    end
+
+    it 'should set the callback_path with script_name if present' do
+      allow(subject).to receive(:script_name).and_return('/api/v1')
+      expect(subject.callback_path).to eq('/api/v1/auth/microsoft_graph/callback')
     end
   end
 
@@ -261,7 +267,7 @@ describe OmniAuth::Strategies::MicrosoftGraph do
         end
       end
     end
-    let(:access_token) { OAuth2::AccessToken.from_hash(client, {}) }
+    let(:access_token) { OAuth2::AccessToken.from_hash(client, { 'access_token' => 'a' }) }
     before { allow(subject).to receive(:access_token).and_return(access_token) }
 
     context 'with verified email' do
@@ -274,6 +280,18 @@ describe OmniAuth::Strategies::MicrosoftGraph do
       end
     end
 
+    context 'when email verification fails' do
+      let(:response_hash) { { mail: 'something@domain.invalid' } }
+      let(:error) { OmniAuth::MicrosoftGraph::DomainVerificationError.new }
+
+      before do
+        allow(OmniAuth::MicrosoftGraph::DomainVerifier).to receive(:verify!).and_raise(error)
+      end
+
+      it 'raises an error' do
+        expect { subject.auth_hash }.to raise_error error
+      end
+    end
   end
 
   describe '#extra' do
@@ -285,7 +303,7 @@ describe OmniAuth::Strategies::MicrosoftGraph do
         end
       end
     end
-    let(:access_token) { OAuth2::AccessToken.from_hash(client, {}) }
+    let(:access_token) { OAuth2::AccessToken.from_hash(client, { 'access_token' => 'a' }) }
 
     before { allow(subject).to receive(:access_token).and_return(access_token) }
 
@@ -439,5 +457,4 @@ describe OmniAuth::Strategies::MicrosoftGraph do
       end.to raise_error(OAuth2::Error)
     end
   end
-
 end
